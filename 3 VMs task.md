@@ -205,9 +205,9 @@
 
 ## Getting app running in background using & -- note the issues
 
-- This causes an issue when killing because it hasn't been properly terminated
-- ps aux | grep node
-- <code>kill [processid of node app]</code>
+- This causes an issue when killing the app because it hasn't been properly terminated so the port is still in use
+- use <code>ps aux | grep node</code> to find process ID(s) of the app
+- <code>kill [process id of node app]</code>
 - Restarting the app (via <code>npm start</code> in app folder) gives me this issue:
 
 >node:events:496
