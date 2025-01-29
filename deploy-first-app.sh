@@ -26,8 +26,9 @@ npm -v
 
 # from the local machine in git, need to scp or rsync or git clone; should have permissions over this folder. scp method:
 # scp -i [path to ssh private key] [folder from home directory of local machine] -r [path to home for VM, made of <user we want to login as> @ <ip>:~]
-# note that this takes a while to complete:
-scp -i ~/.ssh/tech501-farah-az-key -r ~/repo azureuser@20.254.65.158:~
+# note that this takes a while to complete
+# withholding for security:
+scp -i
 
 # for script?
 cd /
