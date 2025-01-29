@@ -38,7 +38,7 @@
    2. Check if node is installed with *node -v*, same with npm
 8. Download app folder from SP, extract it into home folder on local machine
 9. In git on the local machine, use SCP or git clone to copy the app folder to the VM's home:
-   1.  SCP method: s*cp -i ~/.ssh/tech501-farah-az-key -r nodejs20-sparta-test-app azureuser@20.254.65.158:~*
+   1.  *scp* method
    2.  Git clone method: *git clone https://github.com/farahc123/tech501-sparta-app repo*
 10. Once app is on the VM, cd into the app folder
 11. Install NPM
