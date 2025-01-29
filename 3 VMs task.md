@@ -1,6 +1,6 @@
-# VM 1-3 steps
+# VM steps
 
-- [VM 1-3 steps](#vm-1-3-steps)
+- [VM steps](#vm-steps)
   - [First VM for app](#first-vm-for-app)
   - [Creating a git repo and syncing it to Github](#creating-a-git-repo-and-syncing-it-to-github)
   - [Creating the second VM](#creating-the-second-vm)
@@ -17,6 +17,11 @@
   - [Setting up reverse proxy on the second VM:](#setting-up-reverse-proxy-on-the-second-vm)
   - [Getting app running in background using \& -- note the issues](#getting-app-running-in-background-using-----note-the-issues)
   - [Getting app running in background with pm2](#getting-app-running-in-background-with-pm2)
+- [Creating DB VM and app VM images](#creating-db-vm-and-app-vm-images)
+- [Creating an app VM and a DB app VM from the previous 2 created images](#creating-an-app-vm-and-a-db-app-vm-from-the-previous-2-created-images)
+  - [User Data script](#user-data-script)
+  - [Levels of automation in order of lowest-highest](#levels-of-automation-in-order-of-lowest-highest)
+  - [Script steps: *run-app-only.sh*](#script-steps-run-app-onlysh)
 
 
 > ## [For Sparta: see important rules about use](https://teams.microsoft.com/l/entity/com.microsoft.teamspace.tab.planner/tt.c_19:TrpQwMO1PhqN7mR8x3SAhj2rcRGRLydw29ZVM26z2m01@thread.tacv2_p_rzzvyNukM0GzIMpb8EjAVJYAD4Ih_h_1736761296374?tenantId=ff15c67c-2870-4e9f-adc1-7d61d855b667&webUrl=https%3A%2F%2Ftasks.teams.microsoft.com%2Fteamsui%2FpersonalApp%2Falltasklists&context=%7B%22subEntityId%22%3A%22%2Fv1%2Fplan%2FrzzvyNukM0GzIMpb8EjAVJYAD4Ih%2Ftask%2FiqUxoyhSfUu-MTXos5X1yZYAA60s%22%2C%22channelId%22%3A%2219%3ATrpQwMO1PhqN7mR8x3SAhj2rcRGRLydw29ZVM26z2m01%40thread.tacv2%22%7D)
@@ -65,8 +70,9 @@
 >   - **Security type**: Standard
 >   - **OS**: Ubuntu server 22.04 lts x64 gen2
 >   - **All other settings default**
->   - Use our existing SSH key
->   - Allow SSH and HTTP ports
+> - **Security type**: Standard
+> - Use our **existing SSH key**
+> - **Allow SSH and HTTP ports**
 > 
 > - **Disk tab**:
 >   - Standard SSD
@@ -80,13 +86,12 @@
   >   - Add inbound rule, set **Destination port range** 3000, set protocol to **TCP** 
    >     - Rename network security group to **tech501-farah-sparta-app-allow-HTTP-SSH-3000**
    - [for future VMs using this NSG, press advanced and choose from drop down]
->      - Back in networking tab, enable** Delete public IP[...]**
+>      - **Back in networking tab, enable Delete public IP[...]**
 
 
 ## SCP method
 
-> - 
-- *scp -i ~/.ssh/tech501-farah-az-key -r ~/repo azureuser@20.254.65.158:~*
+> - hidden for security
 
 ## Git clone method
 
@@ -117,8 +122,11 @@
 
 > **Dependencies**:
 > - **Name**: tech501-yourname-sparta-app-db-vm
+> - **Security**: Standard 
 >-  **Disk**: Ubuntu 22.04 LTS image
 >-  Same size as usual (**Standard B1s**)
+> - my existing SSH key
+> - **Disks tab:** Standard SSD
 > - **NSG**: new, allow SSH
 > - **Public IP**: yes
 > - **Virtual network**: existing [our name] 2-net one
@@ -240,9 +248,10 @@ Emitted 'error' event on Server instance at:
 
 ## Getting app running in background with pm2
 
->High-level steps:
+- From now on, we want the app running in the background using PM2
+- High-level steps:
 > 1. Install PM2
-> 2. Check it's working with <code?--version</code>
+> 2. Check it's working with <code>--version</code>
 > 3. Navigate to the app folder in the second-vm
 > 4. Start the app using PM2 command
 > 5. Stop the app using PM2 command
@@ -256,3 +265,73 @@ Emitted 'error' event on Server instance at:
 > - pm2 start app.js
 > - pm2 stop app.js
 
+# Creating DB VM and app VM images
+
+- We do this to create a generalised image of the second app VM from which future VMs can be created -- doing this because the second app now includes a reverse proxy so we want this to be our app image from now on
+- The point of creating these images is that we've got the VM working manually with all the required dependencies once (i.e. at this stage, we've added reverse proxy and PM2 on the second app VM), so now we want this as our model to be replicated via automation
+- Again, creating an image from a VM  means it wipes out the user, so you can't log in to this VM again
+- unconnectable after the following standard procedure:
+  - Go to the first VM, click Capture and Image from top menu
+Choose "No, capture only a managed image" option (i.e. uncheck gallery option)
+  - Create image
+- if a Trusted Launch error, need to recreate the DB VM because this means the Security setting in VM creation was set to Trusted Launch, when it **should be** Standard (need to redo because you can't downgrade security type after creation, only upgrading)
+
+# Creating an app VM and a DB app VM from the previous 2 created images
+
+> - tech501-farah-sparta-app-dp-from-image-vm
+> - tech501-farah-third-deploy-app-from-second-image-vm
+>  
+- The point of creating these images is that we've got the VM working manually with all the required dependencies once (i.e. at this stage, we've added reverse proxy and PM2), so now we want this as our model to be replicated via automation
+  - in general, need to be aware of cost-benefit ratio of spending time on these automation tasks if they don't actually save that much time
+- Go into **Images** page on Azure Portal, then **Create VM** from correct images 
+- Fill in settings as usual:
+  - DB VM: private subnet, non-HTTP rule NSG
+  - app VM: public subnet, HTTP rule NSG
+- Tested connection between the two using normal steps:
+    - SSHing into both
+    - on app VM, navigating to app folder, running <code>export</code> command and <code>pm2 start app.js</code> 
+- Delete inactive VMs, NOT images or new VMs created from images
+
+## User Data script
+
+- We want to create a script that means we no longer have to run the <code>export</code> and <code>pm2 start app.js</code> commands -- we want the app to simply run once we have started the VMs
+- We want to design this script so it can be put into the **User data** field during Azure VM creation process (which runs as root user once immediately after the VM is created) box
+- This should:
+  1. begin with shebang
+  2. correctly <code>cd</code> into *app* folder as **scripts automatically start in the root directory**
+  3. export environmental variable (be sure to check private IP is correct for new app VM from image)
+  - [if needed, npm install, but leave out because this is done and we want speed]
+  4. <code>pm2 start app.js</code>
+
+- Note that in <code>export</code> commands, it goes **private IP:HOST NUMBER**
+- Note that we will also want to create a script that means we don't have to SSH in to execute the script, but we won't have time to do this on the course
+
+## Levels of automation in order of lowest-highest
+
+1. Manually configuring everything
+2. Using a script to install dependencies
+3. Using our *run-app-only.sh* Bash script in User Data (which still requires us to SSH in to start the app)
+- creating an image from any of the above is the quickest way to get the app up and running 
+
+## Script steps: *run-app-only.sh*
+
+- Get DB VM started and connect
+  - ensure MongoDB is working with <code>sudo systemctl ststatus mongod</code>
+-  Once the above two VMs are created from images, we need to create a new VM from the latest app VM image with these settings (note: use the *Images* page on Azure as it's faster this way)
+> -  **Name**: tech501-farah-app-demo-from-img-vm
+> -  **Set username**: adminuser
+> -  Use **existing SSH** (select mine)
+> -  Don't need to edit inbound ports on Basic tab as we'll be using our existing NSG which is configured to accept HTTP
+> -  Choose **Other** on license type
+> -  **Disks tab**: Standard SSD
+> -  Enable **Delete with VM**
+> -  **Networking tab**:
+>     -  choose my vnet and my public subnet
+>     -  choose existing NSG with HTTP 3000 rules
+> -  Enable *Delete public IP...*
+> -  **Advanced tab**:
+>   -  Enable **User Data** option
+>   -  In resulting box, **paste run-app-only.sh script**
+> -  Set **Tags**
+
+- After this, wait 2--3 minutes to test the app by visiting the public IP as URL, and /posts/ page

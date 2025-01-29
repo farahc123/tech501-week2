@@ -25,7 +25,7 @@ sudo apt-get update
 # installs mongo db 7.0.6 components; DOES REQUIRE INPUT SO NEED TO FIX
 sudo apt-get install -y mongodb-org=7.0.6 mongodb-org-database=7.0.6 mongodb-org-server=7.0.6 mongodb-mongosh mongodb-org-mongos=7.0.6 mongodb-org-tools=7.0.6
 
-# configure the bindIP - will have to work out a command to change this to 0.0.0.0
+# configure the bindIP - will have to work out a command to change this to 0.0.0.0 like sudo nano /etc/mongod.conf
 
 # do we need to include enabling mongod code?
 sudo systemctl enable mongod
