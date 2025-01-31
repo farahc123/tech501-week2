@@ -1,22 +1,38 @@
 # Securing the database
 
 - [Securing the database](#securing-the-database)
+- [High-level steps of Friday's task](#high-level-steps-of-fridays-task)
   - [Security](#security)
   - [3-subnet architecture](#3-subnet-architecture)
     - [Explanation of NVA](#explanation-of-nva)
     - [Creating our new virtual network](#creating-our-new-virtual-network)
-  - [Creating the new DB VM:](#creating-the-new-db-vm)
-  - [Creating the new app VM:](#creating-the-new-app-vm)
+  - [Creating the new DB VM](#creating-the-new-db-vm)
+  - [Creating the new app VM](#creating-the-new-app-vm)
   - [Sending ping from App VM to DB VM](#sending-ping-from-app-vm-to-db-vm)
   - [Creating NVA VM](#creating-nva-vm)
   - [Creating route table](#creating-route-table)
-  - [Create route in route table](#create-route-in-route-table)
-  - [Associate subnet with route table](#associate-subnet-with-route-table)
+    - [Creating route in route table](#creating-route-in-route-table)
+    - [Associate subnet with route table](#associate-subnet-with-route-table)
   - [Enabling IP forwarding on NVA VM on Azure](#enabling-ip-forwarding-on-nva-vm-on-azure)
   - [Enabling IP forwarding on NVA VM on Linux](#enabling-ip-forwarding-on-nva-vm-on-linux)
   - [Setup IP table rule](#setup-ip-table-rule)
   - [Setting stricter rules for the DB VM](#setting-stricter-rules-for-the-db-vm)
-- [Friday steps](#friday-steps)
+
+
+# High-level steps of Friday's task 
+
+1. Create v-net and subnets
+2. Create DB VM from my image
+3. Create app VM from my image
+4. When setting this architecture up for the first time on this course, we verify connection by visiting the public IP URL and /posts page and sending a ping
+5. Create NVA VM
+6. Create route table
+7. Setup route in route table
+8. Enable IP forwarding for NVA VM on Azure
+9. Enable IP forwarding for NVA VM on Linux
+10. Setup NVA VM
+11. Setup IP table rules
+12. Setup stricter rules on the DB VM
 
 ## Security
 
@@ -76,7 +92,7 @@
 >    - This is enabled because we don't want inbound Internet access, and we don't want anyone who potentially gets into the subnet anyway to be able to have outbound access either
 >    - We also don't need the Internet on this VM ourselves because MongoDB is already installed (as we will be using our preconfigured DB VM image for the new DB VM in the 3-subnet v-net)
 
-## Creating the new DB VM:
+## Creating the new DB VM
 
 - This is made from our existing DB VM image
 
@@ -96,7 +112,7 @@
 >**Tags**:
 >   - **Owner**: Farah
 
-## Creating the new app VM:
+## Creating the new app VM
 
 - This is made from our existing app VM image
 
@@ -167,7 +183,7 @@
 > - **Name**: tech501-farah-to-private-subnet-rt
 > - **Region**: UK South
 
-## Create route in route table
+### Creating route in route table
 
 1. Once created, go to the resource and click **Routes** under **Settings** on sidebar
 2. Click **Add**:
@@ -180,7 +196,7 @@
 - Once added, the `ping` command we have been running in Git Bash stops — this shows that there is no network connection now, which is correct
 ![alt text](image-1.png)
 
-## Associate subnet with route table
+### Associate subnet with route table
 
 1. Go to my route table's page and click **Subnets** under **Settings** on sidebar
 2. Click **Associate** and choose *public-subnet* because we need to choose the source of the route (not the destination, which is the private-subnet)
@@ -256,18 +272,4 @@ net.ipv4.ip_forward=1`
 
 - note that `ping` has now stopped because it's now been blocked by Rule 2
 
-# Friday steps
-
-1. Create v-net and subnets
-2. Create DB VM from my image
-3. Create app VM from my image
-4. When setting this architecture up for the first time on this course, we verify connection by visiting the public IP URL and /posts page and sending a ping
-5. Create NVA VM
-6. Create route table
-7. Setup route in route table
-8. Enable IP forwarding for NVA VM on Azure
-9. Enable IP forwarding for NVA VM on Linux
-10. Setup NVA VM
-11. Setup IP table rules
-12. Setup stricter rules on the DB VM
 
