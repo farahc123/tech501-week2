@@ -6,9 +6,10 @@
   - [Reasons why we need to load-test and using ApacheBench](#reasons-why-we-need-to-load-test-and-using-apachebench)
   - [Scaling](#scaling)
   - [Azure VM scale set (with high availability and scalability)](#azure-vm-scale-set-with-high-availability-and-scalability)
-  - [Scale-set:](#scale-set)
+    - [Scale-sets](#scale-sets)
   - [Creating our first Azure scale-set](#creating-our-first-azure-scale-set)
   - [SSHing into VMs that are in the scale-set](#sshing-into-vms-that-are-in-the-scale-set)
+  - [Setting alerts on Azure](#setting-alerts-on-azure)
 
 ## Why we need to monitor
 
@@ -33,7 +34,7 @@
 
 ## Reasons why we need to load-test and using ApacheBench
 
--**Load-testing** helps determine how much traffic a HTTP server can sustain before performance degrades, and set baselines for typical response times
+- **Load-testing** helps determine how much traffic a HTTP server can sustain before performance degrades, and set baselines for typical response times
 - **ApacheBench** is a tool that measures the performance of a web server by inundating it with HTTP requests and recording metrics for latency and success
 >- Installing the Apache Bench benchmarking tool on the app VM:
 > 
@@ -62,9 +63,11 @@
 ## Azure VM scale set (with high availability and scalability)
 
 - **High availability**: highest available uptime
+- To deploy an app with high availability & scalability, we want to allow is to scale in and out via a VM **scale-set** with a **minumum of 2 VMs and 3 availability zones**
+- We get high availability via using 3 availability zones and a minimum of two VMs so one is a failsafe — this all aids disaster recovery
+- In most regions on Azure, there are 3 availability zones
 
-Scale-set:
-  - 
+### Scale-sets
 - The scale-set will create our VMs automatically when started
 - We're going to use  our app VM image for our scale-set
 - **Load-balancer**: responsible for spreading out the Internet (or internal) traffic to our apps amongst our VMs
@@ -73,7 +76,7 @@ Scale-set:
   - Our **minimum number** of VMs: 2
   - Our **maximum number** of VMs: 3
   - **Average CPU usage**: 75%
-  - **Availability zones**: one in zone 1, 2, and 3 — to help aid disaster recovery; future VMs will all then be spread across these defined zones
+  - **Availability zones**: one in zone 1, 2, and 3 to help aid disaster recovery; future VMs will all then be spread across these defined zones
 
 ## Creating our first Azure scale-set
 
@@ -166,4 +169,11 @@ Scale-set:
  
   `ssh -i ~/.ssh/tech501-farah-az-key -p 50001 adminuser@85.210.74.156`
 
- 
+## Setting alerts on Azure
+
+- We set alerts because we want our application to  be highly reliable and robust
+- % of CPU usage is a common metric to base an alert on
+- **Steps on Azure**:
+  1. Go to the VM SS's resource page
+  2. Choose **Alerts** under the **Monitoring** tab on the sidebar
+  3. Click **Create alert rule** 

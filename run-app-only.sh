@@ -1,3 +1,5 @@
+# note that this is for the 2-subnet-vnet app vm with user data; for 3-subnet we need to change the private ip to 10.0.4.4
+
 #!/bin/bash
 
 # navigating into app folder
