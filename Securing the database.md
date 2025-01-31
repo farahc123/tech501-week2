@@ -47,7 +47,7 @@
 
 ## 3-subnet architecture
 
-![alt text](image-6.png)
+![alt text](images-securing/image-6.png)
 **replace with my diagram**
 
 - We **always** need to plan this architecture out before making it
@@ -148,7 +148,7 @@
 - SSH into App VM on Git Bash
 - run `ping 10.0.4.4`
 - Result:
-![ping command output](image.png)
+![ping command output](images-securing/image.png)
 - Kept this running throughout the task to watch what happens as NVA was setup
 
 ## Creating NVA VM
@@ -194,7 +194,7 @@
 > - 10.0.3.4 (this is the first address our NVA should be using in its subnet space)
  
 - Once added, the `ping` command we have been running in Git Bash stops — this shows that there is no network connection now, which is correct
-![alt text](image-1.png)
+![alt text](images-securing/image-1.png)
 
 ### Associate subnet with route table
 
@@ -203,13 +203,13 @@
 
 ## Enabling IP forwarding on NVA VM on Azure
 
-- Go to the NVA VM's **NSG** via the **Network settings** tab: ![alt text](image-2.png)
+- Go to the NVA VM's **NSG** via the **Network settings** tab: ![alt text](images-securing/image-2.png)
 - **Enable IP forwarding** and **Apply**
 
 ## Enabling IP forwarding on NVA VM on Linux
 
 1. Connect to NVA VM on Git Bash using SSH
-2. Run the following command ![alt text](image-3.png)
+2. Run the following command ![alt text](images-securing/image-3.png)
     `sysctl net.ipv4.ip_forward`
 3. Sudo into the config file with
 - 
@@ -221,7 +221,7 @@ net.ipv4.ip_forward=1`
 5. **Ctrl-S** and **Ctrl-X** to save and exit
 6. Reload the config file with `sudo sysctl -p`
 7. Verify that IP forwarding is enabled with `sysctl net.ipv4.ip_forward` again — should show `1` for on
- ![alt text](image-4.png)
+ ![alt text](images-securing/image-4.png)
 - Check `ping` window; should show that pings have resumed — they have
 
 ## Setup IP table rule
@@ -259,7 +259,7 @@ net.ipv4.ip_forward=1`
 3. Create the first rule:
    - Rule 1: allow MongoDB access:
 
-![alt text](image-5.png)
+![alt text](images-securing/image-5.png)
 
 4. Create second rule:
     - Rule 2: Deny access to everything else :
