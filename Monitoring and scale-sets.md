@@ -150,7 +150,7 @@ Scale-set:
 
  
 - After creating, I checked the VMs were running and healthy on the **Instances** tab (they were) and tested the app (it worked)
-- We can recreate our VMs at any point by clicking **Reimage** on the SS page
+- We can recreate our VMs at any point by clicking **Reimage** on the SS page — note that if this is a VM based on an image with User Data, this will **execute that script in User Data** again
 
 ## SSHing into VMs that are in the scale-set
 
