@@ -203,6 +203,8 @@
 > #remove *try_files* line
 > #replace with:
 > - <code>proxy_pass http://127.0.0.1:3000;}</code>
+> or
+> `proxy_pass http://localhost:3000;}`
 >
 >#check nginx config file syntax is okay 
 > 
@@ -342,7 +344,7 @@ Choose "No, capture only a managed image" option (i.e. uncheck gallery option)
 > -  Set **Tags**
 
 - After this, wait 2--3 minutes to test the app by visiting the public IP as URL, and /posts/ page
-- **be sure to run `pm2 stop app.js` after this first login**
+- **be sure to run `pm2 stop app.js` after this first login and every subsequent login to ensure no *pm2* processes are left over for the next login**
 
 ## Troubleshooting
 
