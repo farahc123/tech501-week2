@@ -2,7 +2,7 @@
 
 - [Securing the database](#securing-the-database)
 - [High-level steps of Friday's task](#high-level-steps-of-fridays-task)
-  - [Security](#security)
+- [Security](#security)
   - [3-subnet architecture](#3-subnet-architecture)
     - [Explanation of NVA](#explanation-of-nva)
     - [Creating our new virtual network](#creating-our-new-virtual-network)
@@ -34,7 +34,7 @@
 11. Setup IP table rules
 12. Setup stricter rules on the DB VM
 
-## Security
+# Security
 
 - Ideally, we would use a Bastion server to secure the app and db vms, which would disallow ssh connection
 - However, these are expensive so we will use a **3-subnet architecture** for our VMs to **ensure that only the app VM can access the Internet and that noone but MongoDB can access the DB VM**
@@ -82,53 +82,68 @@
 >  - **Edit the existing *default* subnet** to:
 >    - **Name**: *public-subnet*
 >    - **Address space**: 10.0.2.0/24
+>     - **Note**: do NOT create an NSG here -- this will be done when creating the VM itself
 >  - **Add a new subnet:** 
 >    - **Name:** *dmz-subnet*
 >    - **Address space**: 10.0.3.0/24 (this is the address space of our old private subnet)
+>     - **Note**: do NOT create an NSG here -- this will be done when creating the VM itself
 >  - **Add new subnet:**
 >    - **Name**: *private-subnet*
 >    - **Address space**: 10.0.4.0/24
 >    - Enable the **Enable private subnet (no default outbound access)**
+>     - **Note**: do NOT create an NSG here -- this will be done when creating the VM itself
 >    - This is enabled because we don't want inbound Internet access, and we don't want anyone who potentially gets into the subnet anyway to be able to have outbound access either
 >    - We also don't need the Internet on this VM ourselves because MongoDB is already installed (as we will be using our preconfigured DB VM image for the new DB VM in the 3-subnet v-net)
 
 ## Creating the new DB VM
 
-- This is made from our existing DB VM image
+- This is made from our **existing** DB VM image
 
 >**Basics tab:**
->   - **Name**:
+>   - **Name**: tech501-farah-in-3-subnet-sparta-db-vm
 >   - **Availability zone**: Zone 3 only
+>   - **Security type**: Standard 
+>   - **Image**: my DB VM image (*tech501-farah-sparta-app-dm-vm-image*[...]) 
+>   - **Size**: Standard B1s 
 >   - **Username**: *adminuser*
 >   - Choose **my existing SSH key**
->   - Allow **SSH** only (this will be restricted later)
+>   - Allow **SSH** only (default; this will be restricted later)
 >   - **License type**: Other
+>
+>  **Disks tab:**
+>   - **OS disk type**: Standard SSD
+>   - Enable **Delete with VM**
 >
 > **Networking tab:**
 >   - Choose ***3-subnet-vnet***
 >   - Choose ***private-subnet***
+>   - Keep NSG on **Basic** -- this will create an NSG associated with the VM and the inbound port rules I've selected in **Basics**
 >   - Choose **None** on public IP
+>   - Enable **Delete NIC with VM**
 >
 >**Tags**:
 >   - **Owner**: Farah
 
 ## Creating the new app VM
 
-- This is made from our existing app VM image
+- This is made from our **existing** app VM image
 
 >**Basics tab:**
 >- **Name**: tech501-farah-in-3-subnet-sparta-app-vm
 >- **Availability zone**: Zone 1 (already selected by default)
 >- **Allow HTTP and SSH**
->- Other usual basic settings
+>- **Username**: adminuser
+> - Choose **my existing SSH key**
+> - Other usual Basics settings
 >---
 >**Networking tab:**
->- My 3 subnet vnet
->- public-subnet
->- From the dropdown, **new public ip enabled** (already selected by default)
+>- **Network**: My 3 subnet vnet
+>- **Subnet**: *public-subnet*
+>- From the dropdown, keep **New public IP enabled** on
+>- Keep NSG on **Basic** -- this will create an NSG associated with the VM and the inbound port rules I've selected in **Basics**
 >---
 >**Advanced tab:**
->- Enable User Data:
+>- Enable **User Data**:
 >
 >   `#!/bin/bash`
 >
@@ -164,21 +179,24 @@
 >---
 >**Disks:**
 >- **Disk**: Standard SSD
->- Check **Delete with VM**
+>- Enable **Delete with VM**
 >
 >---
 >**Networking tab:**
->- 3 subnet vnet
->- dmz subnet
->- basic nsg
->- new public IP (selected by default)
->- enable delete public IP and NIC when deleted 
+>- **Network**: 3 subnet vnet
+>- **Subnet:** *dmz-subnet*
+>- From the dropdown, keep **New public IP** enabled (selected by default)
+>- Keep NSG on **Basic** -- this will create an NSG associated with the VM and the inbound port rules I've selected in **Basics**
+>- Enable **Delete public IP and NIC when deleted**
 >---
 >**Tags**:
->- **Owner**: farah
+>- **Owner**: Farah
 
 ## Creating route table
 
+- We create a route table which will determine if traffic arrives at the public-subnet that requests info from the DB VM (i.e. via the */posts* page), it will be forced through the NVA VM (unbeknownst to the app VM); we do this by associating the route table with the private-subnet
+- The NVA will then inspect the packets that arrive to it (i.e. that are for the */posts* page) -- our IP tables rule will then pass along only MongoDB-related traffic (i.e. database requests)
+- This data can then be retrieved and sent directly to the app VM because we have no rules on the return of data
 1. Navigate to **Route tables** via the Azure search bar and create a new one
 > - **Name**: tech501-farah-to-private-subnet-rt
 > - **Region**: UK South
@@ -188,22 +206,23 @@
 1. Once created, go to the resource and click **Routes** under **Settings** on sidebar
 2. Click **Add**:
 > - **Route name**: to-private-subnet-route
-> - Destination type: IP Addresses
-> **Destination IP addresses/CIDR ranges:** 10.0.4.0/24 — this is the address space of the private subnet
+> - **Destination type**: IP Addresses
+> - **Destination IP addresses/CIDR ranges:** 10.0.4.0/24 — this is the address space of the private subnet
 > - **Next hop type:** Virtual appliance
-> - 10.0.3.4 (this is the first address our NVA should be using in its subnet space)
- 
-- Once added, the `ping` command we have been running in Git Bash stops — this shows that there is no network connection now, which is correct
-![alt text](images-securing/image-1.png)
+> - **Next hop address**: 10.0.3.4 (this is the first address our NVA should be using in its subnet space)
+
 
 ### Associate subnet with route table
 
 1. Go to my route table's page and click **Subnets** under **Settings** on sidebar
-2. Click **Associate** and choose *public-subnet* because we need to choose the source of the route (not the destination, which is the private-subnet)
+2. Click **Associate** and choose my *public-subnet* because we need to choose the source of the route (not the destination, which is the private-subnet)
+
+- Once added, the `ping` command we have been running in Git Bash stops — this shows that there is no network connection now, which is correct
+![alt text](images-securing/image-1.png)
 
 ## Enabling IP forwarding on NVA VM on Azure
 
-- Go to the NVA VM's **NSG** via the **Network settings** tab: ![alt text](images-securing/image-2.png)
+- Go to the NVA VM's **NSG** via the **Network settings** tab, clicking the name in the green box ![alt text](images-securing/image-2.png)
 - **Enable IP forwarding** and **Apply**
 
 ## Enabling IP forwarding on NVA VM on Linux
@@ -215,12 +234,14 @@
 - 
     `sudo nano /etc/sysctl.conf`
 4. and uncomment the following in the second line below in this file:
-- 
-  `# Uncomment the next line to enable packet forwarding for IPv4
-net.ipv4.ip_forward=1` 
-5. **Ctrl-S** and **Ctrl-X** to save and exit
-6. Reload the config file with `sudo sysctl -p`
-7. Verify that IP forwarding is enabled with `sysctl net.ipv4.ip_forward` again — should show `1` for on
+
+  >  \# Uncomment the next line to enable packet forwarding for IPv4
+  >
+  > \# net.ipv4.ip_forward=1` 
+
+1. **Ctrl-S** and **Ctrl-X** to save and exit
+2. Reload the config file with `sudo sysctl -p`
+3. Verify that IP forwarding is enabled with `sysctl net.ipv4.ip_forward` again — should show `1` for on
  ![alt text](images-securing/image-4.png)
 - Check `ping` window; should show that pings have resumed — they have
 
@@ -254,6 +275,7 @@ net.ipv4.ip_forward=1`
 
 ## Setting stricter rules for the DB VM
 
+- Note that SSH is already allowed here so we aren't setting it up -- but note that **SSH is only allowed for testing**
 1. Go to the NSG for the DB VM
 2. Go to **Inbound security rules** under Settings
 3. Create the first rule:
