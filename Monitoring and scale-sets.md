@@ -63,7 +63,7 @@
 ## Azure VM scale set (with high availability and scalability)
 
 - **High availability**: highest available uptime
-- To deploy an app with high availability & scalability, we want to allow is to scale in and out via a VM **scale-set** with a **minumum of 2 VMs and 3 availability zones**
+- To deploy an app with high availability & scalability, we want to allow it to scale in and out via a VM **scale-set** with a **minumum of 2 VMs and 3 availability zones**
 - We get high availability via using 3 availability zones and a minimum of two VMs so one is a failsafe — this all aids disaster recovery
 - In most regions on Azure, there are 3 availability zones
 
@@ -119,12 +119,12 @@
 >  - **Load Balancing**:
 >    - Choose **Azure Load Balancer**
 >    - **Select Load balancer**: choose **Create a load balancer**
->      - **Name**: tech501-farah-sparta-app-load-balancher
+>      - **Name**: tech501-farah-sparta-app-load-balancer
 >      - **Type**: public
 >      - **Protocol**: TCP
 >      - **Rules**:
 >        - **Load Balancer Rule** (controls traffic forwarding)
->          - **Frontend port**: 80
+>          - **Frontend port**: 80 (HTTP)
 >          - **Backend port**: 80 (if reverse proxy set, keep as 80 otherwise 3000)
 >        - **Inbound NAT rule** (which controls how you reach the VMs behind the load balancer)
 >          - **Frontend port range start**: 50000 (so if we want to SSH in to a VM in the scale set, we do so to port 50000, incrementing by one for the next VM, etc.)

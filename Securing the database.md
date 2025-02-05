@@ -5,7 +5,7 @@
 - [Security](#security)
   - [3-subnet architecture](#3-subnet-architecture)
     - [Explanation of NVA](#explanation-of-nva)
-    - [Creating our new virtual network](#creating-our-new-virtual-network)
+  - [Creating our new virtual network](#creating-our-new-virtual-network)
   - [Creating the new DB VM](#creating-the-new-db-vm)
   - [Creating the new app VM](#creating-the-new-app-vm)
   - [Sending ping from App VM to DB VM](#sending-ping-from-app-vm-to-db-vm)
@@ -36,7 +36,11 @@
 
 # Security
 
-- Ideally, we would use a Bastion server to secure the app and db vms, which would disallow ssh connection
+- Is the cloud more secure than on-premise?
+  - Not necessarily
+  - A level of effort and expertise is required to make things more secure in the cloud as you can still implement bad security practices in the cloud using IaaS
+  - It depends on the service model you're using; for example, if using IaaS, you have more control but more responsibility; whereas if you're using PaaS, patching is done for you, though you'll still need to ensure you secure passwords etc.
+- Ideally, we would use a Bastion server to secure the app and db VMs, which would disallow ssh connection
 - However, these are expensive so we will use a **3-subnet architecture** for our VMs to **ensure that only the app VM can access the Internet and that noone but MongoDB can access the DB VM**
 - We will do this by adding a Network Virtual Appliance (NVA) and its own subnet (*dmz-subnet*) between the other two VMs
 - When securing our virtual network, we don't want to leave any ports open that we dont need
@@ -47,7 +51,7 @@
 
 ## 3-subnet architecture
 
-![alt text](images-securing/image-6.png)
+![alt text](3-subnet-vnet-architecture.drawio.png)
 **replace with my diagram**
 
 - We **always** need to plan this architecture out before making it
@@ -73,7 +77,7 @@
 - We'll use IP tables on the NVA VM to set up our "firewall" rules
 - Once this is all done, all legitimate traffic will be forwarded to the private subnet
   
-  ###  Creating our new virtual network 
+  ##  Creating our new virtual network 
 > **Basics tab:**
 > - **Name**: *tech501-farah-3-subnet-vnet*
 >
@@ -194,7 +198,7 @@
 
 ## Creating route table
 
-- We create a route table which will determine if traffic arrives at the public-subnet that requests info from the DB VM (i.e. via the */posts* page), it will be forced through the NVA VM (unbeknownst to the app VM); we do this by associating the route table with the private-subnet
+- We create a route table which will force traffic arriving at the public-subnet that requests info from the DB VM (i.e. via the */posts* page) to go through the NVA VM (unbeknownst to the app VM); we do this by associating the route table with the private-subnet
 - The NVA will then inspect the packets that arrive to it (i.e. that are for the */posts* page) -- our IP tables rule will then pass along only MongoDB-related traffic (i.e. database requests)
 - This data can then be retrieved and sent directly to the app VM because we have no rules on the return of data
 1. Navigate to **Route tables** via the Azure search bar and create a new one
@@ -275,6 +279,7 @@
 
 ## Setting stricter rules for the DB VM
 
+- We are essentially doing what we did with the IP tables here, but implementing it via the DB VM's NSG as an extra safety net
 - Note that SSH is already allowed here so we aren't setting it up -- but note that **SSH is only allowed for testing**
 1. Go to the NSG for the DB VM
 2. Go to **Inbound security rules** under Settings

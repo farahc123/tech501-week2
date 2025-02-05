@@ -354,10 +354,10 @@ Choose "No, capture only a managed image" option (i.e. uncheck gallery option)
 - ran these commands:
 > - *sudo -E npm install*
 > - *sudo -E pm2 start app.js*
-> - s*udo pm2 stop all*
+> - *sudo pm2 stop all*
 > - *ps aux*
-> - If pm2 processes are still running when run <code> ps aux | grep pm2</code>, try <code>pm2 stop all -f</code>
+> - If pm2 processes are still running when run <code> ps aux | grep pm2</code> and kill them as pm2 is the parent process for the app; try <code>pm2 stop all -f</code>
 > for Thursday morning's issue of "Cannot get posts" after checking everything:
->   -  the issue really was that I had *pm2* processes still lingering in <code>ps aux</code>
+>   -  the issue really was that I had *pm2* processes still lingering in <code>ps aux</code> so had to `kill` them
 > - however I also changed ownership of the *app* folder to adminuser as I had just corrected this in my new VM creation process (was previously azureuser) -- this shouldn't need to be done again
 > - I manually killed pm2 and node processes that still existed on <code>ps aux | grep pm2</code> after running <code>pm2 stop all</code> (but should be able to leapfrog this step via the *-f* command) -- this should  be fixed from now on **SO LONG AS I BE SURE TO RUN** `pm2 stop app.js` **AT END OF EVERY USE BEFORE LOGGING OUT OF THE VM**, but run this `pm2 stop all -f` command if issue arises again
