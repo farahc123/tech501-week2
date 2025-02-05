@@ -171,9 +171,4 @@
 
 ## Setting alerts on Azure
 
-- We set alerts because we want our application to  be highly reliable and robust
-- % of CPU usage is a common metric to base an alert on
-- **Steps on Azure**:
-  1. Go to the VM SS's resource page
-  2. Choose **Alerts** under the **Monitoring** tab on the sidebar
-  3. Click **Create alert rule** 
+[See this page in Week 3 repo](https://github.com/farahc123/tech501-week3/blob/main/Azure%20alerts.md)
