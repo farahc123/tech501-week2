@@ -19,7 +19,7 @@ curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | \
 #creates file list
 echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
 
-#updates and installs
+#updates
 sudo apt-get update
 
 # installs mongo db 7.0.6 components; DOES REQUIRE INPUT SO NEED TO FIX
